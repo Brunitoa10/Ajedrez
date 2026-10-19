@@ -24,7 +24,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class JdbcRepositoryTest {
+public class JdbcRepositoryTest {
 
     @TempDir
     Path tempDir;
@@ -33,7 +33,7 @@ class JdbcRepositoryTest {
     private JdbcProgressRepository progress;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         ConnectionFactory connections = ConnectionFactories.create(DatabaseConfig.sqlite(tempDir.resolve("data/test.db")));
         new SchemaInitializer(connections).initialize();
         new SchemaInitializer(connections).initialize(); // idempotente
@@ -42,7 +42,7 @@ class JdbcRepositoryTest {
     }
 
     @Test
-    void savesAndReadsFinishedGameWithStatistics() {
+    public void savesAndReadsFinishedGameWithStatistics() {
         ChessRules rules = ChessRules.standard();
         try (GameService service = new GameService(rules, new EngineFactory(rules, new PieceSquareEvaluator()), games)) {
             Game game = service.newGame();
@@ -68,7 +68,7 @@ class JdbcRepositoryTest {
     }
 
     @Test
-    void upsertsProgress() {
+    public void upsertsProgress() {
         progress.markLessonCompleted("pawn");
         progress.markLessonCompleted("pawn");
         progress.recordPuzzleAttempt("p1", false);

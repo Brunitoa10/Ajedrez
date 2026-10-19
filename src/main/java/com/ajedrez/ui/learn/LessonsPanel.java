@@ -129,7 +129,7 @@ public final class LessonsPanel extends JPanel implements Refreshable {
         private final ListCell cell = new ListCell();
         private final JLabel header = new JLabel();
 
-        LessonRenderer() {
+        public LessonRenderer() {
             header.setFont(Theme.font(Font.BOLD, 11));
             header.setForeground(Theme.TEXT_MUTED);
             header.setBorder(Theme.padding(12, 10));

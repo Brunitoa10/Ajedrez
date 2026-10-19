@@ -13,7 +13,7 @@ final class StepMoveStrategy implements PieceMoveStrategy {
 
     private final int[][] offsets;
 
-    StepMoveStrategy(int[][] offsets) {
+    public StepMoveStrategy(int[][] offsets) {
         this.offsets = offsets;
     }
 

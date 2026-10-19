@@ -94,7 +94,7 @@ public final class Theme {
                 padding(12, 14));
     }
 
-    static String firstAvailable(List<String> candidates) {
+    public static String firstAvailable(List<String> candidates) {
         Set<String> installed = Arrays.stream(GraphicsEnvironment.getLocalGraphicsEnvironment()
                 .getAvailableFontFamilyNames()).collect(Collectors.toSet());
         return candidates.stream().filter(installed::contains).findFirst().orElse(Font.SANS_SERIF);

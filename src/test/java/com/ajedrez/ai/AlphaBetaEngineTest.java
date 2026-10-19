@@ -10,7 +10,7 @@ import java.util.Random;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class AlphaBetaEngineTest {
+public class AlphaBetaEngineTest {
 
     private final ChessRules rules = ChessRules.standard();
 
@@ -19,25 +19,25 @@ class AlphaBetaEngineTest {
     }
 
     @Test
-    void findsMateInOne() {
+    public void findsMateInOne() {
         Position position = Position.fromFen("6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1");
         assertEquals(Move.fromUci("e1e8"), engine(Difficulty.MEDIUM).chooseMove(position).orElseThrow());
     }
 
     @Test
-    void findsMateInTwo() {
+    public void findsMateInTwo() {
         Position position = Position.fromFen("4r2k/6pp/7N/3Q4/8/8/8/6K1 w - - 0 1");
         assertEquals(Move.fromUci("d5g8"), engine(Difficulty.HARD).chooseMove(position).orElseThrow());
     }
 
     @Test
-    void capturesHangingQueen() {
+    public void capturesHangingQueen() {
         Position position = Position.fromFen("4k3/8/8/3q4/8/8/8/3RK3 w - - 0 1");
         assertEquals(Move.fromUci("d1d5"), engine(Difficulty.MEDIUM).chooseMove(position).orElseThrow());
     }
 
     @Test
-    void everyLevelReturnsALegalMoveQuickly() {
+    public void everyLevelReturnsALegalMoveQuickly() {
         Position position = Position.initial();
         for (Difficulty level : Difficulty.values()) {
             long start = System.currentTimeMillis();

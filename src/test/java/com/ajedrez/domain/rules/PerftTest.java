@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * si enroques, al paso, coronaciones o clavadas fallan, los números no coinciden.
  * Valores de https://www.chessprogramming.org/Perft_Results
  */
-class PerftTest {
+public class PerftTest {
 
     private final ChessRules rules = ChessRules.standard();
 
@@ -41,7 +41,7 @@ class PerftTest {
             "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8; 2; 1486",
             "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8; 3; 62379"
     })
-    void perftMatchesReference(String fen, int depth, long expected) {
+    public void perftMatchesReference(String fen, int depth, long expected) {
         assertEquals(expected, perft(Position.fromFen(fen), depth));
     }
 

@@ -14,7 +14,7 @@ public enum Termination {
 
     private final String description;
 
-    Termination(String description) {
+    private Termination(String description) {
         this.description = description;
     }
 
@@ -22,7 +22,7 @@ public enum Termination {
         return description;
     }
 
-    static Termination fromStatus(PositionStatus status) {
+    public static Termination fromStatus(PositionStatus status) {
         return switch (status) {
             case CHECKMATE -> CHECKMATE;
             case STALEMATE -> STALEMATE;

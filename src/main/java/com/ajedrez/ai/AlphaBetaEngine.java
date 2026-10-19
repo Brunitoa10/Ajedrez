@@ -169,7 +169,7 @@ public final class AlphaBetaEngine implements ChessEngine {
 
     /** Señal interna para abortar la búsqueda por tiempo o por cancelación del hilo. */
     private static final class SearchInterrupted extends RuntimeException {
-        SearchInterrupted() {
+        public SearchInterrupted() {
             super(null, null, false, false);
         }
     }
@@ -181,25 +181,25 @@ public final class AlphaBetaEngine implements ChessEngine {
         private boolean canInterrupt;
         private int extensionPlyLimit;
 
-        SearchContext(long deadlineNanos) {
+        public SearchContext(long deadlineNanos) {
             this.deadlineNanos = deadlineNanos;
         }
 
         /** La primera iteración (profundidad 1) siempre se completa para tener una jugada válida. */
-        void allowInterruption() {
+        public void allowInterruption() {
             canInterrupt = true;
         }
 
         /** Evita que las extensiones de jaque (jaques perpetuos) disparen la búsqueda. */
-        void limitExtensions(int plyLimit) {
+        public void limitExtensions(int plyLimit) {
             extensionPlyLimit = plyLimit;
         }
 
-        int extensionPlyLimit() {
+        public int extensionPlyLimit() {
             return extensionPlyLimit;
         }
 
-        void tick() {
+        public void tick() {
             nodes++;
             if (!canInterrupt || (nodes & TIME_CHECK_MASK) != 0) {
                 return;

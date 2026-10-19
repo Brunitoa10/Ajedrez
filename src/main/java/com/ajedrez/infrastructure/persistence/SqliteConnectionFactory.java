@@ -18,7 +18,7 @@ final class SqliteConnectionFactory implements ConnectionFactory {
 
     private final String jdbcUrl;
 
-    SqliteConnectionFactory(String jdbcUrl) {
+    public SqliteConnectionFactory(String jdbcUrl) {
         this.jdbcUrl = jdbcUrl;
         createParentDirectory(jdbcUrl);
     }

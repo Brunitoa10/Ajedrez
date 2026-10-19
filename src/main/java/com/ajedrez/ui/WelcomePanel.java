@@ -162,7 +162,7 @@ public final class WelcomePanel extends JComponent {
     /** Botón tipo "píldora" con borde dorado que se rellena al pasar el mouse. */
     private static final class PlayButton extends JButton {
 
-        PlayButton(Runnable onPlay) {
+        public PlayButton(Runnable onPlay) {
             super("JUGAR");
             setContentAreaFilled(false);
             setBorderPainted(false);

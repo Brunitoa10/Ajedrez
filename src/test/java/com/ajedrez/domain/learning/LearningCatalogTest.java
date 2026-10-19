@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Valida TODO el contenido didáctico: si alguien agrega una lección con una jugada ilegal
  * o un "mate" que no es mate, el build falla.
  */
-class LearningCatalogTest {
+public class LearningCatalogTest {
 
     private static final Pattern MATE_GOAL = Pattern.compile("\\bmate\\b", Pattern.CASE_INSENSITIVE);
 
@@ -30,7 +30,7 @@ class LearningCatalogTest {
     private final LearningCatalog catalog = new BuiltInLearningCatalog();
 
     @TestFactory
-    Stream<DynamicTest> everyExerciseIsPlayableAndSolvable() {
+    public Stream<DynamicTest> everyExerciseIsPlayableAndSolvable() {
         Stream<DynamicTest> lessons = catalog.lessons().stream()
                 .map(l -> DynamicTest.dynamicTest("Lección: " + l.title(), () -> verify(l.exercise(), l.goal())));
         Stream<DynamicTest> puzzles = catalog.puzzles().stream()
@@ -67,14 +67,14 @@ class LearningCatalogTest {
     }
 
     @Test
-    void idsAreUnique() {
+    public void idsAreUnique() {
         Set<String> ids = new HashSet<>();
         catalog.lessons().forEach(l -> assertTrue(ids.add(l.id()), "id repetido " + l.id()));
         catalog.puzzles().forEach(p -> assertTrue(ids.add(p.id()), "id repetido " + p.id()));
     }
 
     @Test
-    void wrongMoveIsReportedAndAlternativeMateIsAccepted() {
+    public void wrongMoveIsReportedAndAlternativeMateIsAccepted() {
         Exercise twoRooks = new Exercise("6k1/5ppp/8/8/8/8/8/R3R1K1 w - - 0 1", List.of("a1a8"));
         ExerciseSession session = new ExerciseSession(rules, twoRooks);
         assertEquals(ExerciseFeedback.Kind.ILLEGAL, session.attempt(Move.fromUci("a1h8")).kind());

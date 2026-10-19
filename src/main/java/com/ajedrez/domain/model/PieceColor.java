@@ -9,7 +9,7 @@ public enum PieceColor {
 
     private final String displayName;
 
-    PieceColor(String displayName) {
+    private PieceColor(String displayName) {
         this.displayName = displayName;
     }
 

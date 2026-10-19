@@ -12,7 +12,7 @@ public enum GameResult {
     private final String pgn;
     private final String displayName;
 
-    GameResult(String pgn, String displayName) {
+    private GameResult(String pgn, String displayName) {
         this.pgn = pgn;
         this.displayName = displayName;
     }

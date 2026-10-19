@@ -14,7 +14,7 @@ final class SlidingMoveStrategy implements PieceMoveStrategy {
 
     private final int[][] directions;
 
-    SlidingMoveStrategy(int[][] directions) {
+    public SlidingMoveStrategy(int[][] directions) {
         this.directions = directions;
     }
 

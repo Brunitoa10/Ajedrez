@@ -15,7 +15,7 @@ final class PostgresConnectionFactory implements ConnectionFactory {
     private final String jdbcUrl;
     private final Properties properties = new Properties();
 
-    PostgresConnectionFactory(String jdbcUrl, String user, String password) {
+    public PostgresConnectionFactory(String jdbcUrl, String user, String password) {
         this.jdbcUrl = jdbcUrl;
         properties.setProperty("user", user == null ? "" : user);
         properties.setProperty("password", password == null ? "" : password);

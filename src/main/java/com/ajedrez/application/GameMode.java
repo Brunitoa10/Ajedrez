@@ -6,7 +6,7 @@ public enum GameMode {
 
     private final String displayName;
 
-    GameMode(String displayName) {
+    private GameMode(String displayName) {
         this.displayName = displayName;
     }
 

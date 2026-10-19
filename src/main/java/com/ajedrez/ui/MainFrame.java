@@ -246,7 +246,7 @@ public final class MainFrame extends JFrame {
         private static final Color COLOR = new Color(0x0B, 0x0C, 0x10);
         private float alpha;
 
-        void fadeIn(Runnable onFinished) {
+        public void fadeIn(Runnable onFinished) {
             alpha = 1f;
             setVisible(true);
             long start = System.currentTimeMillis();

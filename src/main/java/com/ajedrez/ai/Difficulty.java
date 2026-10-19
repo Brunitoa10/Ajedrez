@@ -21,7 +21,7 @@ public enum Difficulty {
     private final String description;
     private final SearchSettings settings;
 
-    Difficulty(String displayName, String description, SearchSettings settings) {
+    private Difficulty(String displayName, String description, SearchSettings settings) {
         this.displayName = displayName;
         this.description = description;
         this.settings = settings;

@@ -115,7 +115,7 @@ public final class StatsPanel extends JPanel implements Refreshable {
         private static final String[] COLUMNS = {"Nivel", "Jugadas", "Ganadas", "Tablas", "Perdidas", "Puntuación"};
         private List<DifficultyStats> rows = List.of();
 
-        void setRows(List<DifficultyStats> newRows) {
+        public void setRows(List<DifficultyStats> newRows) {
             rows = List.copyOf(newRows);
             fireTableDataChanged();
         }

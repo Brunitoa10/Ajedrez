@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * El presentador se prueba sin Swing gracias a MVP: una vista falsa registra lo que se le pide
  * mostrar y una cola simula el hilo de la interfaz.
  */
-class PlayPresenterTest {
+public class PlayPresenterTest {
 
     private final BlockingQueue<Runnable> uiQueue = new LinkedBlockingQueue<>();
     private final FakeView view = new FakeView();
@@ -39,7 +39,7 @@ class PlayPresenterTest {
     private PlayPresenter presenter;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         ChessRules rules = ChessRules.standard();
         GameService service = new GameService(rules, new EngineFactory(rules, new PieceSquareEvaluator()), repository);
         presenter = new PlayPresenter(service, uiQueue::add, view);
@@ -52,7 +52,7 @@ class PlayPresenterTest {
     }
 
     @Test
-    void computerRepliesAfterHumanMove() throws InterruptedException {
+    public void computerRepliesAfterHumanMove() throws InterruptedException {
         presenter.start(MatchSettings.vsComputer(PieceColor.WHITE, Difficulty.BEGINNER, "Ana"));
         assertTrue(view.interactive);
 
@@ -66,7 +66,7 @@ class PlayPresenterTest {
     }
 
     @Test
-    void computerMovesFirstWhenHumanPlaysBlack() throws InterruptedException {
+    public void computerMovesFirstWhenHumanPlaysBlack() throws InterruptedException {
         presenter.start(MatchSettings.vsComputer(PieceColor.BLACK, Difficulty.BEGINNER, "Ana"));
         runNextUiTask();
         assertEquals(1, view.moves.size());
@@ -74,7 +74,7 @@ class PlayPresenterTest {
     }
 
     @Test
-    void undoAgainstComputerReturnsToHumanTurn() throws InterruptedException {
+    public void undoAgainstComputerReturnsToHumanTurn() throws InterruptedException {
         presenter.start(MatchSettings.vsComputer(PieceColor.WHITE, Difficulty.BEGINNER, "Ana"));
         presenter.onHumanMove(Move.fromUci("e2e4"));
         runNextUiTask();
@@ -86,7 +86,7 @@ class PlayPresenterTest {
     }
 
     @Test
-    void resigningSavesTheGame() {
+    public void resigningSavesTheGame() {
         presenter.start(MatchSettings.vsComputer(PieceColor.WHITE, Difficulty.HARD, "Ana"));
         presenter.resign();
         assertEquals(1, repository.saved.size());
@@ -96,7 +96,7 @@ class PlayPresenterTest {
     }
 
     @Test
-    void twoPlayersCheckmateIsSaved() {
+    public void twoPlayersCheckmateIsSaved() {
         presenter.start(MatchSettings.twoPlayers());
         for (String uci : List.of("f2f3", "e7e5", "g2g4", "d8h4")) {
             presenter.onHumanMove(Move.fromUci(uci));

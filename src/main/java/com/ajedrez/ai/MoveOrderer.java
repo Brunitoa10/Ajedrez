@@ -18,7 +18,7 @@ final class MoveOrderer {
     private static final int PROMOTION_SCORE = 50_000;
     private static final int CAPTURE_BASE_SCORE = 10_000;
 
-    List<Move> order(Position position, List<Move> moves, Move principal) {
+    public List<Move> order(Position position, List<Move> moves, Move principal) {
         List<Move> sorted = new ArrayList<>(moves);
         sorted.sort(Comparator.comparingInt((Move m) -> score(position, m, principal)).reversed());
         return sorted;

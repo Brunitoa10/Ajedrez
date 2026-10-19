@@ -10,7 +10,7 @@ public enum LessonCategory {
 
     private final String displayName;
 
-    LessonCategory(String displayName) {
+    private LessonCategory(String displayName) {
         this.displayName = displayName;
     }
 

@@ -91,7 +91,7 @@ final class PieceSquareTables {
     }
 
     /** Bonificación posicional para piezas que no son el rey. */
-    static int value(PieceType type, PieceColor color, Square square) {
+    public static int value(PieceType type, PieceColor color, Square square) {
         int[] table = switch (type) {
             case PAWN -> PAWN;
             case KNIGHT -> KNIGHT;
@@ -103,11 +103,11 @@ final class PieceSquareTables {
         return table[indexFor(color, square)];
     }
 
-    static int kingMiddlegame(PieceColor color, Square square) {
+    public static int kingMiddlegame(PieceColor color, Square square) {
         return KING_MIDDLEGAME[indexFor(color, square)];
     }
 
-    static int kingEndgame(PieceColor color, Square square) {
+    public static int kingEndgame(PieceColor color, Square square) {
         return KING_ENDGAME[indexFor(color, square)];
     }
 

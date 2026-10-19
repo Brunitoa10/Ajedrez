@@ -257,12 +257,12 @@ public final class HistoryPanel extends JPanel implements Refreshable {
 
         private List<GameRecord> games = List.of();
 
-        void setGames(List<GameRecord> newGames) {
+        public void setGames(List<GameRecord> newGames) {
             games = List.copyOf(newGames);
             fireTableDataChanged();
         }
 
-        GameRecord gameAt(int row) {
+        public GameRecord gameAt(int row) {
             return games.get(row);
         }
 

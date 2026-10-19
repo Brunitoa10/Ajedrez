@@ -115,7 +115,7 @@ public final class PieceRenderer {
     private record GlyphSet(char solidGlyph, char outlineGlyph, boolean hasLineArt, Shape silhouette,
                             Rectangle2D bounds) {
 
-        static GlyphSet create(Font reference, FontRenderContext frc, PieceType type) {
+        public static GlyphSet create(Font reference, FontRenderContext frc, PieceType type) {
             char whiteGlyph = (char) ('♔' + glyphOffset(type));
             char blackGlyph = (char) ('♚' + glyphOffset(type));
             int blackInk = inkOf(reference, frc, blackGlyph);

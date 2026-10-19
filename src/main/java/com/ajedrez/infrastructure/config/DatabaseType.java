@@ -7,7 +7,7 @@ public enum DatabaseType {
 
     private final String schemaResource;
 
-    DatabaseType(String schemaResource) {
+    private DatabaseType(String schemaResource) {
         this.schemaResource = schemaResource;
     }
 

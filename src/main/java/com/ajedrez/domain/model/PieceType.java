@@ -19,7 +19,7 @@ public enum PieceType {
     private final int value;
     private final String displayName;
 
-    PieceType(char fenChar, String sanLetter, int value, String displayName) {
+    private PieceType(char fenChar, String sanLetter, int value, String displayName) {
         this.fenChar = fenChar;
         this.sanLetter = sanLetter;
         this.value = value;

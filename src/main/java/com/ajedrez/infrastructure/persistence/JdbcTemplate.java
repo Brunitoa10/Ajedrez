@@ -15,21 +15,21 @@ final class JdbcTemplate {
 
     private final ConnectionFactory connections;
 
-    JdbcTemplate(ConnectionFactory connections) {
+    public JdbcTemplate(ConnectionFactory connections) {
         this.connections = connections;
     }
 
     @FunctionalInterface
-    interface ParameterSetter {
+    public interface ParameterSetter {
         public void set(PreparedStatement statement) throws SQLException;
     }
 
     @FunctionalInterface
-    interface RowMapper<T> {
+    public interface RowMapper<T> {
         public T map(ResultSet row) throws SQLException;
     }
 
-    <T> List<T> query(String sql, ParameterSetter params, RowMapper<T> mapper) {
+    public <T> List<T> query(String sql, ParameterSetter params, RowMapper<T> mapper) {
         try (Connection connection = connections.open();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             params.set(statement);
@@ -45,7 +45,7 @@ final class JdbcTemplate {
         }
     }
 
-    int update(String sql, ParameterSetter params) {
+    public int update(String sql, ParameterSetter params) {
         try (Connection connection = connections.open();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             params.set(statement);
@@ -56,7 +56,7 @@ final class JdbcTemplate {
     }
 
     /** Inserta y devuelve la clave generada (columna "id"). */
-    long insert(String sql, ParameterSetter params) {
+    public long insert(String sql, ParameterSetter params) {
         try (Connection connection = connections.open();
              PreparedStatement statement = connection.prepareStatement(sql, new String[]{"id"})) {
             params.set(statement);

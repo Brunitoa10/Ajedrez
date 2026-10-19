@@ -20,7 +20,7 @@ final class KingMoveStrategy implements PieceMoveStrategy {
     private final PieceMoveStrategy steps = new StepMoveStrategy(Directions.ALL);
     private final AttackDetector attackDetector;
 
-    KingMoveStrategy(AttackDetector attackDetector) {
+    public KingMoveStrategy(AttackDetector attackDetector) {
         this.attackDetector = attackDetector;
     }
 

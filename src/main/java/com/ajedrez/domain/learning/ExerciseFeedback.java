@@ -26,19 +26,19 @@ public record ExerciseFeedback(Kind kind, Move opponentReply, String message) {
         return kind == Kind.CORRECT || kind == Kind.SOLVED;
     }
 
-    static ExerciseFeedback correct(Move reply) {
+    public static ExerciseFeedback correct(Move reply) {
         return new ExerciseFeedback(Kind.CORRECT, reply, "¡Bien! Seguí así.");
     }
 
-    static ExerciseFeedback solved() {
+    public static ExerciseFeedback solved() {
         return new ExerciseFeedback(Kind.SOLVED, null, "¡Excelente! Ejercicio resuelto.");
     }
 
-    static ExerciseFeedback wrong() {
+    public static ExerciseFeedback wrong() {
         return new ExerciseFeedback(Kind.WRONG, null, "No es la mejor jugada. Probá de nuevo.");
     }
 
-    static ExerciseFeedback illegal() {
+    public static ExerciseFeedback illegal() {
         return new ExerciseFeedback(Kind.ILLEGAL, null, "Esa jugada no es legal.");
     }
 }

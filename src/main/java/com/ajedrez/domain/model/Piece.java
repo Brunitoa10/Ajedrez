@@ -20,7 +20,7 @@ public enum Piece {
     private final PieceColor color;
     private final PieceType type;
 
-    Piece(PieceColor color, PieceType type) {
+    private Piece(PieceColor color, PieceType type) {
         this.color = color;
         this.type = type;
     }

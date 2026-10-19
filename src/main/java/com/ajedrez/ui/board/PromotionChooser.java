@@ -18,7 +18,7 @@ final class PromotionChooser {
     private PromotionChooser() {
     }
 
-    static Optional<PieceType> choose(Component parent, PieceColor color) {
+    public static Optional<PieceType> choose(Component parent, PieceColor color) {
         PieceType[] choices = PieceType.PROMOTION_CHOICES;
         Icon[] icons = Arrays.stream(choices)
                 .map(type -> new PieceIcon(Piece.of(color, type), ICON_SIZE))
