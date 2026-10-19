@@ -1,0 +1,15 @@
+# Build
+target/
+
+# Datos locales generados al ejecutar desde el proyecto
+data/
+config/ajedrez.properties
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+nbproject/private/
+.settings/
+.project
+.classpath
