@@ -1,3 +1,4 @@
+
 package com.ajedrez.ai;
 
 import com.ajedrez.domain.model.Move;
@@ -12,15 +13,16 @@ import java.util.Optional;
 import java.util.random.RandomGenerator;
 
 /**
- * Motor propio: negamax con poda alfa-beta, profundización iterativa con límite de tiempo,
- * extensión de jaque y búsqueda de quiescencia (solo capturas) para evitar el "efecto horizonte".
- * <p>
- * El motor no guarda estado entre llamadas: cada búsqueda usa su propio {@link SearchContext},
- * por lo que es seguro usarlo desde un hilo en segundo plano.
+ * Motor de ajedrez basado en negamax y poda alfa-beta.
+ *
+ * Incluye profundización iterativa, límite temporal, extensiones de jaque
+ * y búsqueda de quiescencia.
+ *
+ * Cada búsqueda dispone de su propio contexto mutable.
  */
 public final class AlphaBetaEngine implements ChessEngine {
 
-    static final int MATE_SCORE = 100_000;
+    private static final int MATE_SCORE = 100_000;
     private static final int INFINITY = 1_000_000;
     private static final int MATE_THRESHOLD = MATE_SCORE - 1_000;
     private static final int MAX_QUIESCENCE_DEPTH = 8;
@@ -32,7 +34,12 @@ public final class AlphaBetaEngine implements ChessEngine {
     private final RandomGenerator random;
     private final MoveOrderer orderer = new MoveOrderer();
 
-    public AlphaBetaEngine(ChessRules rules, Evaluator evaluator, SearchSettings settings, RandomGenerator random) {
+    public AlphaBetaEngine(
+            ChessRules rules,
+            Evaluator evaluator,
+            SearchSettings settings,
+            RandomGenerator random
+    ) {
         this.rules = Objects.requireNonNull(rules, "rules");
         this.evaluator = Objects.requireNonNull(evaluator, "evaluator");
         this.settings = Objects.requireNonNull(settings, "settings");
@@ -41,156 +48,337 @@ public final class AlphaBetaEngine implements ChessEngine {
 
     @Override
     public String name() {
-        return "Alfa-Beta (prof. " + settings.maxDepth() + ")";
+        String engineName = "Alfa-Beta (prof. " + settings.maxDepth() + ")";
+        return engineName;
     }
 
     @Override
     public Optional<Move> chooseMove(Position position) {
+        Objects.requireNonNull(position, "position");
+
         List<Move> moves = rules.legalMoves(position);
-        if (moves.isEmpty()) {
-            return Optional.empty();
+        Optional<Move> selectedMove = Optional.empty();
+
+        if (!moves.isEmpty()) {
+            if (moves.size() == 1) {
+                selectedMove = Optional.of(moves.get(0));
+            } else if (random.nextDouble() < settings.blunderChance()) {
+                int randomIndex = random.nextInt(moves.size());
+                selectedMove = Optional.of(moves.get(randomIndex));
+            } else {
+                List<ScoredMove> scored = iterativeDeepening(position, moves);
+                selectedMove = Optional.of(pickMove(scored));
+            }
         }
-        if (moves.size() == 1) {
-            return Optional.of(moves.get(0));
-        }
-        if (random.nextDouble() < settings.blunderChance()) {
-            return Optional.of(moves.get(random.nextInt(moves.size())));
-        }
-        List<ScoredMove> scored = iterativeDeepening(position, moves);
-        return Optional.of(pickMove(scored));
+
+        return selectedMove;
     }
 
-    private List<ScoredMove> iterativeDeepening(Position root, List<Move> moves) {
-        SearchContext context = new SearchContext(System.nanoTime() + settings.timeLimitMillis() * 1_000_000L);
-        List<ScoredMove> best = moves.stream().map(m -> new ScoredMove(m, 0)).toList();
-        for (int depth = 1; depth <= settings.maxDepth(); depth++) {
+    /**
+     * Busca iterativamente desde profundidad 1 hasta la profundidad máxima.
+     * Conserva el último resultado completado si se interrumpe una búsqueda.
+     */
+    private List<ScoredMove> iterativeDeepening(
+            Position root,
+            List<Move> moves
+    ) {
+        long deadline = System.nanoTime()
+                + settings.timeLimitMillis() * 1_000_000L;
+
+        SearchContext context = new SearchContext(deadline);
+
+        List<ScoredMove> best = moves.stream()
+                .map(move -> new ScoredMove(move, 0))
+                .toList();
+
+        int depth = 1;
+        boolean searching = true;
+
+        while (depth <= settings.maxDepth() && searching) {
             try {
                 best = searchRoot(root, best, depth, context);
+                context.allowInterruption();
+
+                boolean mateFound =
+                        Math.abs(best.get(0).score()) >= MATE_THRESHOLD;
+
+                if (mateFound) {
+                    searching = false;
+                } else {
+                    depth++;
+                }
             } catch (SearchInterrupted interrupted) {
-                break;
-            }
-            context.allowInterruption();
-            if (Math.abs(best.get(0).score()) >= MATE_THRESHOLD) {
-                break;
+                searching = false;
             }
         }
+
         return best;
     }
 
     /**
-     * Puntúa las jugadas raíz. Con "personalidad" (niveles bajos) se calcula el valor exacto de cada
-     * jugada para poder elegir entre varias buenas; en niveles altos se usa la ventana alfa-beta completa.
+     * Evalúa las jugadas raíz y las ordena por puntuación descendente.
      */
-    private List<ScoredMove> searchRoot(Position root, List<ScoredMove> previous, int depth, SearchContext context) {
+    private List<ScoredMove> searchRoot(
+            Position root,
+            List<ScoredMove> previous,
+            int depth,
+            SearchContext context
+    ) {
         boolean exactScores = settings.hasPersonality();
+
         context.limitExtensions(depth * 2 + 2);
+
         int alpha = -INFINITY;
+
         List<ScoredMove> results = new ArrayList<>(previous.size());
+
         for (ScoredMove candidate : previous) {
             Position child = root.apply(candidate.move());
+
             int windowAlpha = exactScores ? -INFINITY : alpha;
-            int score = -negamax(child, depth - 1, -INFINITY, -windowAlpha, 1, context);
+
+            int score = -negamax(
+                    child,
+                    depth - 1,
+                    -INFINITY,
+                    -windowAlpha,
+                    1,
+                    context
+            );
+
             results.add(new ScoredMove(candidate.move(), score));
+
             alpha = Math.max(alpha, score);
         }
-        results.sort(Comparator.comparingInt(ScoredMove::score).reversed());
+
+        results.sort(
+                Comparator.comparingInt(ScoredMove::score).reversed()
+        );
+
         return results;
     }
 
-    private int negamax(Position position, int depth, int alpha, int beta, int ply, SearchContext context) {
+    /**
+     * Ejecuta negamax con poda alfa-beta y extensiones de jaque.
+     */
+    private int negamax(
+            Position position,
+            int depth,
+            int alpha,
+            int beta,
+            int ply,
+            SearchContext context
+    ) {
         context.tick();
+
+        int result = 0;
+        boolean searching = true;
+
         if (position.halfmoveClock() >= 100) {
-            return 0;
+            searching = false;
         }
-        boolean inCheck = rules.isInCheck(position);
-        if (inCheck && ply < context.extensionPlyLimit()) {
-            depth++;
-        }
-        if (depth <= 0) {
-            return quiescence(position, alpha, beta, 0, context);
-        }
-        List<Move> moves = rules.legalMoves(position);
-        if (moves.isEmpty()) {
-            return inCheck ? -MATE_SCORE + ply : 0;
-        }
-        for (Move move : orderer.order(position, moves, null)) {
-            int score = -negamax(position.apply(move), depth - 1, -beta, -alpha, ply + 1, context);
-            if (score >= beta) {
-                return beta;
+
+        boolean inCheck = false;
+
+        if (searching) {
+            inCheck = rules.isInCheck(position);
+
+            if (inCheck && ply < context.extensionPlyLimit()) {
+                depth++;
             }
-            alpha = Math.max(alpha, score);
+
+            if (depth <= 0) {
+                result = quiescence(position, alpha, beta, 0, context);
+                searching = false;
+            }
         }
-        return alpha;
+
+        List<Move> moves = List.of();
+
+        if (searching) {
+            moves = rules.legalMoves(position);
+
+            if (moves.isEmpty()) {
+                result = inCheck ? -MATE_SCORE + ply : 0;
+                searching = false;
+            }
+        }
+
+        if (searching) {
+            moves = orderer.order(position, moves, null);
+        }
+
+        int index = 0;
+
+        while (searching && index < moves.size()) {
+            Move move = moves.get(index);
+
+            int score = -negamax(
+                    position.apply(move),
+                    depth - 1,
+                    -beta,
+                    -alpha,
+                    ply + 1,
+                    context
+            );
+
+            if (score >= beta) {
+                result = beta;
+                searching = false;
+            } else {
+                alpha = Math.max(alpha, score);
+            }
+
+            index++;
+        }
+
+        if (searching) {
+            result = alpha;
+        }
+
+        return result;
     }
 
-    private int quiescence(Position position, int alpha, int beta, int qDepth, SearchContext context) {
+    /**
+     * Evalúa posiciones tácticas para reducir el efecto horizonte.
+     * Considera capturas y promociones.
+     */
+    private int quiescence(
+            Position position,
+            int alpha,
+            int beta,
+            int qDepth,
+            SearchContext context
+    ) {
         context.tick();
+
+        int result = 0;
         int standPat = evaluator.evaluate(position);
+
+        boolean searching = true;
+
         if (standPat >= beta) {
-            return beta;
+            result = beta;
+            searching = false;
+        } else {
+            alpha = Math.max(alpha, standPat);
         }
-        alpha = Math.max(alpha, standPat);
-        if (qDepth >= MAX_QUIESCENCE_DEPTH) {
-            return alpha;
+
+        List<Move> tactical = List.of();
+
+        if (searching && qDepth < MAX_QUIESCENCE_DEPTH) {
+            tactical = rules.legalMoves(position).stream()
+                    .filter(move ->
+                            position.isCapture(move) || move.isPromotion()
+                    )
+                    .toList();
+
+            tactical = orderer.order(position, tactical, null);
+        } else if (searching) {
+            result = alpha;
+            searching = false;
         }
-        List<Move> tactical = rules.legalMoves(position).stream()
-                .filter(m -> position.isCapture(m) || m.isPromotion())
-                .toList();
-        for (Move move : orderer.order(position, tactical, null)) {
-            int score = -quiescence(position.apply(move), -beta, -alpha, qDepth + 1, context);
+
+        int index = 0;
+
+        while (searching && index < tactical.size()) {
+            Move move = tactical.get(index);
+
+            int score = -quiescence(
+                    position.apply(move),
+                    -beta,
+                    -alpha,
+                    qDepth + 1,
+                    context
+            );
+
             if (score >= beta) {
-                return beta;
+                result = beta;
+                searching = false;
+            } else {
+                alpha = Math.max(alpha, score);
             }
-            alpha = Math.max(alpha, score);
+
+            index++;
         }
-        return alpha;
+
+        if (searching) {
+            result = alpha;
+        }
+
+        return result;
     }
 
-    /** Elige la jugada final aplicando el ruido del nivel (nunca ignora un mate encontrado). */
+    /**
+     * Selecciona la jugada final aplicando el ruido configurado.
+     * No introduce ruido cuando se ha encontrado un mate ganador.
+     */
     private Move pickMove(List<ScoredMove> scored) {
-        if (settings.noiseCentipawns() == 0 || scored.get(0).score() >= MATE_THRESHOLD) {
-            return scored.get(0).move();
-        }
-        ScoredMove best = null;
-        int bestNoisy = Integer.MIN_VALUE;
-        for (ScoredMove candidate : scored) {
-            int noise = random.nextInt(-settings.noiseCentipawns(), settings.noiseCentipawns() + 1);
-            int noisy = candidate.score() + noise;
-            if (noisy > bestNoisy) {
-                bestNoisy = noisy;
-                best = candidate;
+        ScoredMove best = scored.get(0);
+
+        boolean applyNoise =
+                settings.noiseCentipawns() != 0
+                && best.score() < MATE_THRESHOLD;
+
+        if (applyNoise) {
+            int bestNoisy = Integer.MIN_VALUE;
+
+            for (ScoredMove candidate : scored) {
+                int noise = random.nextInt(
+                        -settings.noiseCentipawns(),
+                        settings.noiseCentipawns() + 1
+                );
+
+                int noisyScore = candidate.score() + noise;
+
+                if (noisyScore > bestNoisy) {
+                    bestNoisy = noisyScore;
+                    best = candidate;
+                }
             }
         }
+
         return best.move();
     }
 
     private record ScoredMove(Move move, int score) {
     }
 
-    /** Señal interna para abortar la búsqueda por tiempo o por cancelación del hilo. */
+    /**
+     * Señal interna para interrumpir una búsqueda.
+     */
     private static final class SearchInterrupted extends RuntimeException {
-        public SearchInterrupted() {
+
+        private SearchInterrupted() {
             super(null, null, false, false);
         }
     }
 
-    /** Estado mutable de una búsqueda concreta (nodos visitados, plazo). */
+    /**
+     * Contexto mutable e independiente para cada búsqueda.
+     */
     private static final class SearchContext {
+
         private final long deadlineNanos;
+
         private long nodes;
         private boolean canInterrupt;
         private int extensionPlyLimit;
 
-        public SearchContext(long deadlineNanos) {
+        private SearchContext(long deadlineNanos) {
             this.deadlineNanos = deadlineNanos;
         }
 
-        /** La primera iteración (profundidad 1) siempre se completa para tener una jugada válida. */
+        /**
+         * Habilita interrupciones después de completar la primera iteración.
+         */
         public void allowInterruption() {
             canInterrupt = true;
         }
 
-        /** Evita que las extensiones de jaque (jaques perpetuos) disparen la búsqueda. */
+        /**
+         * Limita la profundidad de las extensiones de jaque.
+         */
         public void limitExtensions(int plyLimit) {
             extensionPlyLimit = plyLimit;
         }
@@ -199,13 +387,25 @@ public final class AlphaBetaEngine implements ChessEngine {
             return extensionPlyLimit;
         }
 
+        /**
+         * Comprueba periódicamente el plazo y la interrupción del hilo.
+         */
         public void tick() {
             nodes++;
-            if (!canInterrupt || (nodes & TIME_CHECK_MASK) != 0) {
-                return;
-            }
-            if (System.nanoTime() > deadlineNanos || Thread.currentThread().isInterrupted()) {
-                throw new SearchInterrupted();
+
+            boolean shouldCheck =
+                    canInterrupt && (nodes & TIME_CHECK_MASK) == 0;
+
+            if (shouldCheck) {
+                boolean deadlineExceeded =
+                        System.nanoTime() > deadlineNanos;
+
+                boolean threadInterrupted =
+                        Thread.currentThread().isInterrupted();
+
+                if (deadlineExceeded || threadInterrupted) {
+                    throw new SearchInterrupted();
+                }
             }
         }
     }
